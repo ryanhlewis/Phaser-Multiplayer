@@ -1,8 +1,8 @@
 {
-  "name": "Socket-Chat-Example",
-  "description": "my first socket.io app",
-  "website": "https://github.com/socketio/chat-example",
-  "repository": "https://github.com/socketio/chat-example",
+  "name": "Phaser-Multiplayer",
+  "description": "my first socket.io + phaser app",
+  "website": "https://github.com/ryanhlewis/Phaser-Multiplayer",
+  "repository": "https://github.com/ryanhlewis/Phaser-Multiplayer",
   "logo": "https://node-js-sample.herokuapp.com/node.svg",
   "success_url": "/",
   "keywords": [
