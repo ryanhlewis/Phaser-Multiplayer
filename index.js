@@ -35,6 +35,7 @@ io.sockets.emit(); //send to all connected clients (same as socket.emit)
 io.sockets.on() ; //initial connection from a client.
 
 */
+var roundCall = Boolean(0);
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/part10.html');
@@ -60,6 +61,20 @@ io.on('connection', (socket) => {
 
   socket.on('sendPlayer', msg => {
     io.to(msg[0]).emit('playerjoined',[msg[1],msg[2],msg[3]]);
+  });
+
+  socket.on('bomb', async msg => {
+    // Authority- determine bomb status, stars status for this round.
+    // The first socket who calls this gets their numbers in.
+    if(!roundCall) {
+      roundCall = Boolean(1);
+      io.emit('bomb',msg);
+      
+      console.log("Called round!");
+      
+      await new Promise(r => setTimeout(() => roundCall = Boolean(0), 2000));
+    }
+
   });
 
   socket.on('disconnect', function () {

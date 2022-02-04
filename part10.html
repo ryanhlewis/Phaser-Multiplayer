@@ -127,7 +127,7 @@ function create ()
     stars.children.iterate(function (child) {
 
         //  Give each star a slightly different bounce
-        child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+        child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.45));
 
     });
 
@@ -168,6 +168,10 @@ function create ()
         ref.physics.add.collider(playerObj.player, platforms);
         playerObj.player.setBounce(0.2);
         playerObj.player.setCollideWorldBounds(true);
+            //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
+        ref.physics.add.overlap(playerObj.player, stars, collectStar, null, ref);
+        ref.physics.add.collider(playerObj.player, bombs, hitBomb, null, ref);
+
         players[msg] = playerObj;
     });
 
@@ -179,12 +183,24 @@ function create ()
         ref.physics.add.collider(playerObj.player, platforms);
         playerObj.player.setBounce(0.2);
         playerObj.player.setCollideWorldBounds(true);
+            //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
+        ref.physics.add.overlap(playerObj.player, stars, collectStar, null, ref);
+        ref.physics.add.collider(playerObj.player, bombs, hitBomb, null, ref);
+
         players[msg[0]] = playerObj;
     });
 
     socket.on('movement', function(msg) {
         console.log(msg);
         inputFunction(players[msg[0]].player,msg[1]);
+    });
+
+    socket.on('bomb', function (msg) {
+        // Somebody has spawned a bomb and stars.
+        spawnBomb(msg[0],msg[1]);
+        
+        console.log("spawning bomb");
+
     });
 
     socket.on('disconnected', function (playerId) {
@@ -260,7 +276,7 @@ function inputFunction(player,input) {
         player.anims.play('turn');
     }
 
-    if (input[3] && player.body.touching.down)
+    if (input[3])
     {
         player.setVelocityY(-330);
     }
@@ -285,14 +301,18 @@ function collectStar (player, star)
         });
 
         var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+        var v = Phaser.Math.Between(-200, 200)
+        socket.emit('bomb', [x,v]);
 
+    }
+}
+
+function spawnBomb(x,v) {
         var bomb = bombs.create(x, 16, 'bomb');
         bomb.setBounce(1);
         bomb.setCollideWorldBounds(true);
-        bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        bomb.setVelocity(v,20);
         bomb.allowGravity = false;
-
-    }
 }
 
 function hitBomb (player, bomb)
