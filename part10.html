@@ -46,6 +46,7 @@ var scoreText;
 var game = new Phaser.Game(config);
 
 var players;
+var ref;
 
 function preload ()
 {
@@ -59,7 +60,7 @@ function preload ()
 
 function create ()
 {
-    players = [];
+    players = {};
     socket = io();
 
     //  A simple background for our game
@@ -84,6 +85,7 @@ function create ()
         this.input = null;
         }
     }
+
     player1 = this.physics.add.sprite(100, 450, 'dude'); 
     player = new Player(player1);
 
@@ -147,20 +149,49 @@ function create ()
 
 
     // Networking
-    players[0] = (player);
 
     socket.on('joined', function() {
-        socket.emit('join', socket.id);
+        players[socket.id] = (player);
+        socket.emit('playerjoin', socket.id);
+    });
+
+    ref = this;
+
+    socket.on('playerjoinedReply',function(msg) {
+        // Send reply
+        socket.emit('sendPlayer',[msg,socket.id]);
+        
+        // Create new player
+        console.log("player joined:" + msg);
+        var player = ref.physics.add.sprite(100, 450, 'dude'); 
+        var playerObj = new Player(player);
+        ref.physics.add.collider(playerObj.player, platforms);
+        playerObj.player.setBounce(0.2);
+        playerObj.player.setCollideWorldBounds(true);
+        players[msg] = playerObj;
+    });
+
+    socket.on('playerjoined',function(msg) {
+        // Create new player
+        console.log("player joined:" + msg);
+        var player = ref.physics.add.sprite(100, 450, 'dude'); 
+        var playerObj = new Player(player);
+        ref.physics.add.collider(playerObj.player, platforms);
+        playerObj.player.setBounce(0.2);
+        playerObj.player.setCollideWorldBounds(true);
+        players[msg] = playerObj;
     });
 
     socket.on('movement', function(msg) {
         console.log(msg);
-        inputFunction(players[0].player,msg);
+        inputFunction(players[msg[0]].player,msg[1]);
     });
 }
-
+var moving = Boolean(0);
+var callOnce = Boolean(0);
 function update ()
 {
+
     if (gameOver)
     {
         return;
@@ -188,12 +219,19 @@ function update ()
     player.input = [left,right,down,up];
 
     if(player.input[0] || player.input[1] || player.input[3]) {
-        socket.emit('movement', player.input);
+        socket.emit('movement', [socket.id,player.input]);
+        moving = Boolean(1);
+        callOnce=Boolean(1);
     } 
+    if(!moving && callOnce) {
+        socket.emit('movement', [socket.id,player.input]);
+        moving = Boolean(1);
+        callOnce = Boolean(0);
+    }
+    moving = Boolean(0);
 
-    players.forEach(player => {
-        inputFunction(player.player,player.input);
-    });
+    // Only handles current players movement, look above for networked players movement.
+    inputFunction(player.player,player.input);
 }
 
 function inputFunction(player,input) {
