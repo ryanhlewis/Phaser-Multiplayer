@@ -59,7 +59,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('sendPlayer', msg => {
-    io.to(msg[0]).emit('playerjoined',msg[1]);
+    io.to(msg[0]).emit('playerjoined',[msg[1],msg[2],msg[3]]);
+  });
+
+  socket.on('disconnect', function () {
+    console.log('user disconnected');
+    io.emit('disconnected', socket.id);
   });
 
 });

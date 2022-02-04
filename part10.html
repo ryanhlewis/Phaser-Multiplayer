@@ -159,7 +159,7 @@ function create ()
 
     socket.on('playerjoinedReply',function(msg) {
         // Send reply
-        socket.emit('sendPlayer',[msg,socket.id]);
+        socket.emit('sendPlayer',[msg,socket.id,players[socket.id].player.x,players[socket.id].player.y]);
         
         // Create new player
         console.log("player joined:" + msg);
@@ -173,18 +173,23 @@ function create ()
 
     socket.on('playerjoined',function(msg) {
         // Create new player
-        console.log("player joined:" + msg);
-        var player = ref.physics.add.sprite(100, 450, 'dude'); 
+        console.log("player joined:" + msg[0]);
+        var player = ref.physics.add.sprite(msg[1], msg[2], 'dude'); 
         var playerObj = new Player(player);
         ref.physics.add.collider(playerObj.player, platforms);
         playerObj.player.setBounce(0.2);
         playerObj.player.setCollideWorldBounds(true);
-        players[msg] = playerObj;
+        players[msg[0]] = playerObj;
     });
 
     socket.on('movement', function(msg) {
         console.log(msg);
         inputFunction(players[msg[0]].player,msg[1]);
+    });
+
+    socket.on('disconnected', function (playerId) {
+        players[playerId].player.destroy();
+        delete players[playerId];
     });
 }
 var moving = Boolean(0);
