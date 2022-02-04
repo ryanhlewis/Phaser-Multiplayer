@@ -38,7 +38,7 @@ io.sockets.on() ; //initial connection from a client.
 var roundCall = Boolean(0);
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/part10.html');
+  res.sendFile(__dirname + '/index.html');
 });
 
 io.on('connection', (socket) => {
