@@ -1,5 +1,5 @@
 {
-  "name": "phaser-multiplayer-example",
+  "name": "phaser-multiplayer",
   "version": "0.0.1",
   "description": "my first socket.io + phaser app",
   "dependencies": {
